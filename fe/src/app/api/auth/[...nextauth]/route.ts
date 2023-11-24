@@ -1,6 +1,5 @@
 import { axiosInstanceNonAuth } from '@/axios/instance'
-import { backend_url } from '@/lib/constant'
-import { NextAuthOptions } from 'next-auth'
+import { NextAuthOptions, Session } from 'next-auth'
 import NextAuth from 'next-auth/next'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
@@ -22,10 +21,10 @@ export const authOptions: NextAuthOptions = {
         }
         const { email, password } = credentials
 
-        const response = await axiosInstanceNonAuth.post('/auth/sign-in', { email, password })
-        if(response) {
-          console.log('Check res: ', response)
-          return response
+        const response:any = await axiosInstanceNonAuth.post('/auth/sign-in', { email, password })
+        if(response && response.statusCode === 200) {
+          // console.log('Check response: ', response.result)
+          return response.result
         }
 
         return null
@@ -34,23 +33,33 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log('Check token: ', token)
       if (user) {
-        return {  ...token,...user }
+        // console.log('Check jwt token: ', user)
+        return {...token, ...user }
       }
       return token
     },
     async session({ token, session }) {
-      session.user = token.user
-      session.access_token = token.access_token
-      session.refresh_token = token.refresh_token
+      // console.log('Check session token: ', token)
+      const sessionInfo = {
+        user: {
+          id: token.user.id,
+          fullName: token.user.fullName,
+          email: token.user.email,
+          avatar: token.user.avatar,
+          phone: token.user.phone,
+        },
+        access_token: token.access_token,
+        refresh_token: token.refresh_token,
+        // expires: session.expires
+      }
 
-      return session
+      return sessionInfo as Session
     }
   },
-  // pages: {
-  //   signIn: '/sign-in'
-  // }
+  pages: {
+    signIn: '/sign-in'
+  }
 }
 
 const handler = NextAuth(authOptions)

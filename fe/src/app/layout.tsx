@@ -20,7 +20,6 @@ export default function RootLayout({
     <html lang='en'>
       <body className={inter.className}>
         <AuthProviders>
-          <Appbar />
           <div className='bg-slate-50 w-full h-screen p-10 flex justify-center items-center'>
             {children}
           </div>

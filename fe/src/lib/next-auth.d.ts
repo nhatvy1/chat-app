@@ -7,6 +7,8 @@ declare module 'next-auth' {
       id: number,
       email: string
       fullName: string
+      avatar: string
+      phone: string
     }
 
     access_token: string
@@ -23,6 +25,8 @@ declare module 'next-auth/jwt' {
       id: number
       email: string
       fullName: string
+      avatar: string
+      phone: string
     }
 
     access_token: string

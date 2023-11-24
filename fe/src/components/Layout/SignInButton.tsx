@@ -4,13 +4,12 @@ import Link from "next/link";
 import React from "react";
 
 const SignInButton = () => {
-  const { data: session } = useSession();
-  console.log('Check signin: ', { session });
+  const { data } = useSession();
 
-  if (session)
+  if (data)
     return (
       <div className="flex gap-4 ml-auto">
-        <p className="text-sky-600">nhat vy</p>
+        <p className="text-sky-600">{data?.user?.fullName}</p>
         <Link
           href={"/api/auth/signout"}
           className="flex gap-4 ml-auto text-red-600"
