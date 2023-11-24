@@ -1,22 +1,18 @@
 import { HttpStatus } from '@nestjs/common';
 
-export enum RESPONSE_STATUS {
-  SUCESS = 1,
-  FAILED = 0,
+interface ResponseType<T> {
+  statusCode: HttpStatus;
+  message: string;
+  result?: T;
 }
-
 export const Response = <T>({
   statusCode,
   message,
   result,
-}: {
-  statusCode: HttpStatus;
-  message?: string;
-  result?: T;
-}) => {
+}: ResponseType<T>) => {
   return {
     statusCode: statusCode,
-    message,
+    message: message,
     result: result || {},
   };
 };

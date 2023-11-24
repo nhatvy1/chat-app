@@ -1,19 +1,73 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CatService } from '../CatModule/cat.service';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../UserModule/user.service';
+import { SignUpDto } from './dto/sign-up.dto';
+import { JwtPayload } from './interfaces/jwt-payload';
+import { SignInDto } from './dto/sign-in.dto';
+import { Hash } from 'src/utils/hash';
+import { TokenVerify, Tokens } from './interfaces/token.interface';
+import { accessToken, refreshToken } from 'src/utils/constants';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../UserModule/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  constructor(private catService: CatService, private jwtService: JwtService) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+  ) {}
 
-  async signIn(username: string, pass: string): Promise<any> {
-    const cat = await this.catService.findOne(username);
-    if (cat?.password !== pass) {
-      throw new UnauthorizedException();
+  async generateToken(userId: number, fullName: string): Promise<Tokens> {
+    const payload: JwtPayload = { userId, fullName };
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: accessToken.secret,
+        expiresIn: accessToken.expiresIn,
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: refreshToken.secret,
+        expiresIn: refreshToken.expiresIn,
+      }),
+    ]);
+
+    return { access_token: access_token, refresh_token: refresh_token };
+  }
+
+  async refreshToken(tokenVerify: TokenVerify) {
+    const { access_token, refresh_token } = await this.generateToken(
+      tokenVerify.userId,
+      tokenVerify.fullName,
+    );
+    return { access_token, refresh_token };
+  }
+
+  async signUp(signUpDto: SignUpDto) {
+    const user = await this.userService.createUser(signUpDto);
+    const { access_token, refresh_token } = await this.generateToken(
+      user.id,
+      user.fullName,
+    );
+    return { user, access_token, refresh_token };
+  }
+
+  async signIn(signInDto: SignInDto) {
+    const user = await this.userService.login(signInDto);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    const isValidPassword = Hash.compare(signInDto.password, user.password);
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Invalid password');
     }
 
-    const payload = { sub: cat.catId, username: cat.name };
-
-    return { access_token: await this.jwtService.signAsync(payload) };
+    const { access_token, refresh_token }: Tokens = await this.generateToken(
+      user.id,
+      user.fullName,
+    );
+    delete user.password;
+    return { user, access_token, refresh_token };
   }
 }
