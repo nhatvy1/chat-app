@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 
 const useAxiosAuth = () => {
   const { data: session } = useSession();
-  console.log('Check session: ', session?.access_token)
 
   useEffect(() => {
     const requestIntercept = axiosInstanceAuth.interceptors.request.use(
@@ -30,7 +29,7 @@ const useAxiosAuth = () => {
         //   ] = `Bearer ${session?.access_token}`;
         //   return axiosInstanceAuth(prevRequest);
         // }
-        return Promise.reject(error);
+        return Promise.reject(error.response.data);
       }
     );
 

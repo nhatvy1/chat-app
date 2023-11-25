@@ -5,6 +5,15 @@ import InBoxUser from "./InboxUser";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { useSession } from "next-auth/react";
 
+
+interface listUser {
+  id: string
+  fullName: string
+  email: string
+  phone: string
+  status: string
+}
+
 const InboxLayout = () => {
   const [choose, setChoose] = useState<number>(-1)
   const [listUser, setListUser] = useState<any>([])
@@ -17,23 +26,23 @@ const InboxLayout = () => {
   } 
 
   const fetchListUser = async ()=> {
-    const response = await axiosAuth.get('/user/find-all')
-    console.log('Check response: ', response)
+    const response: any = await axiosAuth.get('/user/find-all')
+    setListUser(response.result)
   }
 
   useEffect(()=> {
     fetchListUser()
-  }, [])
+  }, [session])
 
   return (
     <div className='basis-[30%] p-5 overflow-auto'>
       <InboxHeader />
       <div className='flex flex-col'>
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((item, index) => (
+        {listUser.map((item: any, index: any)=> (
           <div className={index === 11 ? "order-first" : ""} key={index}>
-            <InBoxUser item={item}
-             fullName={`Huỳnh Vỹ ${item}`} choose={choose} chooseUser={chooseUser}/>
-          </div>
+          <InBoxUser item={index}
+           fullName={item.fullName} choose={choose} chooseUser={chooseUser}/>
+        </div>
         ))}
       </div>
     </div>

@@ -8,7 +8,7 @@ import { Response } from 'src/utils/response.type';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get('')
+  @Get('find-all')
   async findAll() {
     const result = await this.userService.findAll();
     return Response({
