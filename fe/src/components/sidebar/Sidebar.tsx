@@ -7,6 +7,7 @@ import { MdBarChart } from "react-icons/md";
 import { MdOutlineContactSupport } from "react-icons/md";
 import { BsChat } from "react-icons/bs";
 import { useSession } from "next-auth/react";
+import { useOutsideClick } from "@/hooks/useClickOutSide";
 
 const menuList = [
   {
@@ -37,9 +38,17 @@ const menuList = [
 
 const Sidebar = () => {
   const [showMenu, setShowMenu] = useState<boolean>(false)
+
+  const handleClickOutSide = ()=> {
+    setShowMenu(false)
+  }
+  const handleClick = ()=> {
+    setShowMenu(true)
+  }
+  const ref = useOutsideClick(handleClickOutSide)
   
   const { data } = useSession()
-
+  
   return (
     <div className='basis-1/5 bg-[#ebf5ff] py-5 pl-5 flex flex-col justify-between'>
       <div>
@@ -63,7 +72,7 @@ const Sidebar = () => {
           </ul>
         </div>
       </div>
-      <div className='flex items-center gap-x-6 p-4 cursor-pointer rounded-l-xl relative'>
+      <div className='flex items-center gap-x-6 p-4 cursor-pointer rounded-l-xl relative' ref={ref} onClick={handleClick} >
         <div className='w-[60px] h-[60px] overflow-hidden rounded-full border-2 border-blue-600'>
           {data?.user.avatar ? (
             <Image
@@ -82,7 +91,7 @@ const Sidebar = () => {
         <span className='text-xl font-medium'>
           {data?.user?.fullName || "Chua co thong tin"}
         </span>
-        <div className="absolute -top-[120%] right-1/4 w-[200px] bg-white shadow-2xl rounded-xl p-2">
+        <div className={`${showMenu ? 'absolute' : 'hidden'} -top-[120%] right-1/4 w-[200px] bg-white shadow-2xl rounded-xl p-2`}>
             <div>
               <Link href='/profile' className="hover:text-[#33ccff] flex justify-center p-4">Trang cá nhân</Link>
             </div>

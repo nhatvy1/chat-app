@@ -20,7 +20,6 @@ export const authOptions: NextAuthOptions = {
           return null
         }
         const { email, password } = credentials
-
         const response:any = await axiosInstanceNonAuth.post('/auth/sign-in', { email, password })
         if(response && response.statusCode === 200) {
           // console.log('Check response: ', response.result)
@@ -40,21 +39,24 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ token, session }) {
-      // console.log('Check session token: ', token)
-      const sessionInfo = {
-        user: {
-          id: token.user.id,
-          fullName: token.user.fullName,
-          email: token.user.email,
-          avatar: token.user.avatar,
-          phone: token.user.phone,
-        },
-        access_token: token.access_token,
-        refresh_token: token.refresh_token,
-        // expires: session.expires
-      }
+      // const sessionInfo = {
+      //   user: {
+      //     id: token.user.id,
+      //     fullName: token.user.fullName,
+      //     email: token.user.email,
+      //     avatar: token.user.avatar,
+      //     phone: token.user.phone,
+      //   },
+      //   access_token: token.access_token,
+      //   refresh_token: token.refresh_token,
+      //   // expires: session.expires
+      // }
+      // return sessionInfo as Session
 
-      return sessionInfo as Session
+      session.user = token.user
+      session.access_token = token.access_token
+      session.refresh_token = token.refresh_token
+      return Promise.resolve(session)
     }
   },
   pages: {
