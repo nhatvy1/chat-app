@@ -5,6 +5,8 @@ import {
   Post,
   UseGuards,
   Get,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -14,6 +16,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { JwtRefreshGuard } from 'src/guards/jwt-auth-refresh';
 import { GetCurrentUser } from 'src/decorators/auth.user.decorator';
 import { TokenVerify } from './interfaces/token.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 export type UserExcludePassword = Omit<User, 'password'>;
 @Controller('auth')
@@ -44,5 +47,11 @@ export class AuthController {
     tokenVerify: TokenVerify,
   ) {
     return this.authService.refreshToken(tokenVerify);
+  }
+
+  @Post('upload-file')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    console.log(file)
   }
 }
